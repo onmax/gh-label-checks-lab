@@ -1,0 +1,11 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+    labels: ['engine:*']
+    names: ['engine:*']
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "action=${{ github.event.action }} label=${{ github.event.label.name }}"
