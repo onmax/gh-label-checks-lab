@@ -1,0 +1,26 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+concurrency:
+  group: ci-${{ github.ref }}${{ github.event.action == 'labeled' && !startsWith(github.event.label.name, 'engine:') && format('-noop-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.event_name != 'pull_request' }}
+jobs:
+  ci:
+    name: ${{ (github.event.action == 'labeled' && !startsWith(github.event.label.name, 'engine:')) && 'label' || 'ci' }}
+    if: github.event.action != 'labeled' || startsWith(github.event.label.name, 'engine:')
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.p.outputs.deploy }}
+    steps:
+      - id: p
+        run: echo "deploy=true" >> "$GITHUB_OUTPUT"
+      - run: echo "action=${{ github.event.action }} label=${{ github.event.label.name }}"
+      - run: exit 1
+  preview:
+    name: ${{ (github.event.action == 'labeled' && !startsWith(github.event.label.name, 'engine:')) && 'preview (label)' || 'preview' }}
+    needs: ci
+    if: github.event_name == 'pull_request' && needs.ci.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo deploying
