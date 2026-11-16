@@ -1,0 +1,22 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'pull_request' }}
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.p.outputs.deploy }}
+    steps:
+      - id: p
+        run: echo "deploy=true" >> "$GITHUB_OUTPUT"
+      - run: exit 1
+  preview:
+    needs: ci
+    if: github.event_name == 'pull_request' && needs.ci.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo deploying

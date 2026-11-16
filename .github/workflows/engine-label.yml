@@ -1,0 +1,13 @@
+name: Engine label
+on:
+  pull_request:
+    types: [labeled, unlabeled]
+concurrency:
+  group: engine-label-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  engine-redeploy:
+    if: startsWith(github.event.label.name, 'engine:')
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "redeploy for ${{ github.event.action }} ${{ github.event.label.name }}"
